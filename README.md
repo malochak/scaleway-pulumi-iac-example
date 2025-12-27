@@ -1,105 +1,157 @@
-# Scaleway Pulumi Infrastructure as Code Starter Template
+# Scaleway Pulumi Infrastructure as Code Example
 
-## Description
-A production-ready starter template for building full-stack applications on Scaleway using Pulumi for infrastructure management. This project demonstrates how to deploy and manage a complete application stack including:
+A production-ready example of managing Scaleway infrastructure using Pulumi with TypeScript. This project demonstrates best practices for multi-environment IaC with proper state management, shared resources, and environment isolation.
 
-- **Infrastructure**: Managed with Pulumi (TypeScript)
-- **Backend**: Java/Kotlin Spring applications
-- **Frontend**: Next.js/React applications
-- **Scaleway Services**: Instances (VMs), Kubernetes, Object Storage, Databases, Queues & Kafka
+## Features
 
-The applications communicate with each other and utilize various Scaleway services, providing a realistic example of a multi-tier application architecture.
-
-## Prerequisites
-
-Before you begin, ensure you have the following installed and configured:
-
-### Required Tools
-- [Pulumi CLI](https://www.pulumi.com/docs/get-started/install/)
-- [Node.js](https://nodejs.org/) - for Pulumi TypeScript and Next.js frontend
-- [Java JDK](https://adoptium.net/) - for backend applications
-- [Kotlin](https://kotlinlang.org/docs/getting-started.html) (if using Kotlin)
-
-### Scaleway Setup
-- [Scaleway Account](https://console.scaleway.com/register)
-- Scaleway Access Key and Secret Key ([How to generate](https://www.scaleway.com/en/docs/identity-and-access-management/iam/how-to/create-api-keys/))
-- Organization ID and Project ID from Scaleway Console
-
-### Configuration
-Set up your Scaleway credentials as environment variables:
-
-```bash
-export SCW_ACCESS_KEY="your-access-key"
-export SCW_SECRET_KEY="your-secret-key"
-export SCW_DEFAULT_ORGANIZATION_ID="your-org-id"
-export SCW_DEFAULT_PROJECT_ID="your-project-id"
-export SCW_DEFAULT_REGION="fr-par"  # or your preferred region
-export SCW_DEFAULT_ZONE="fr-par-1"  # or your preferred zone
-```
+- **Multi-environment setup** with separate dev and prod stacks
+- **Shared resource management** with dedicated bootstrap infrastructure
+- **Remote state** using Scaleway Object Storage (S3-compatible)
+- **Container registry** shared across all environments
+- **VPC and networking** per environment with proper isolation
+- **TypeScript** for type-safe infrastructure code
+- **Production-ready** with proper .gitignore, versioning, and documentation
 
 ## Quick Start
 
-### 1. Clone the Repository
-```bash
-git clone <repository-url>
-cd scaleway-pulumi-iac-example
-```
+### Prerequisites
 
-### 2. Deploy Infrastructure (Dev Environment)
-```bash
-cd infra/dev
-npm install
-pulumi stack init dev
-pulumi up
-```
+- Node.js 24+
+- Pulumi CLI ([install](https://www.pulumi.com/docs/install/))
+- Scaleway account with API credentials
 
-### 3. Deploy Backend Application
-```bash
-cd ../../backend
-# Build and deploy instructions will be added
-```
+### Setup
 
-### 4. Deploy Frontend Application
-```bash
-cd ../frontend
-# Build and deploy instructions will be added
-```
+1. **Complete manual setup** (create Object Storage bucket, get API keys):
+   ```bash
+   cat SETUP.md
+   ```
+
+2. **Configure environment**:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your Scaleway credentials
+   source .env
+   ```
+
+3. **Deploy bootstrap infrastructure** (container registry):
+   ```bash
+   cd infra-bootstrap
+   npm install
+   pulumi login
+   pulumi stack init shared
+   pulumi up
+   ```
+
+4. **Deploy dev environment**:
+   ```bash
+   cd ../infra
+   npm install
+   pulumi stack init dev
+   pulumi up
+   ```
+
+5. **Deploy prod environment**:
+   ```bash
+   pulumi stack init prod
+   pulumi stack select prod
+   pulumi up
+   ```
+
+See [QUICKSTART.md](QUICKSTART.md) for detailed instructions.
 
 ## Project Structure
 
 ```
 scaleway-pulumi-iac-example/
-├── infra/                          # Infrastructure as Code (Pulumi)
-│   ├── dev/                        # Development environment
-│   │   ├── index.ts               # Main infrastructure definition
-│   │   ├── Pulumi.yaml            # Pulumi project configuration
-│   │   └── package.json           # TypeScript dependencies
-│   ├── staging/                    # Staging environment (planned)
-│   └── prod/                       # Production environment (planned)
-├── backend/                        # Backend applications (Java/Kotlin Spring)
-│   └── ...                        # Spring Boot application structure
-├── frontend/                       # Frontend applications (Next.js/React)
-│   └── ...                        # Next.js application structure
-├── README.md                       # This file
-└── LICENSE                         # Apache License 2.0
+├── README.md                   # This file
+├── LICENSE                     # Apache License 2.0
+├── SETUP.md                    # Manual setup prerequisites
+├── QUICKSTART.md               # Detailed deployment guide
+├── CONTRIBUTING.md             # Contribution guidelines
+├── .gitignore                  # Git ignore rules
+│
+├── infra-bootstrap/            # Shared resources (deploy once)
+│   ├── Pulumi.yaml
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── index.ts                # Container registry namespace
+│
+└── infra/                      # Per-environment resources
+    ├── Pulumi.yaml
+    ├── package.json
+    ├── tsconfig.json
+    ├── index.ts                # VPC, networking, compute
+    ├── Pulumi.dev.yaml         # Dev environment config
+    └── Pulumi.prod.yaml        # Prod environment config
 ```
 
-### Infrastructure Components
+## What's Deployed
 
-The `infra/dev` directory contains Pulumi code that provisions:
+### Bootstrap Stack (shared)
+- **Container Registry**: Shared namespace for all environments
+- Images tagged by environment: `myapp:dev`, `myapp:prod`
 
-- **Compute**: Scaleway Instances (VMs) or Kubernetes clusters
-- **Storage**: Object Storage buckets for static assets and data
-- **Databases**: Managed PostgreSQL, MySQL, or Redis instances
-- **Messaging**: Scaleway Messaging and Queuing (NATS/SQS-compatible) and Kafka
-- **Networking**: VPC, security groups, and load balancers
+### Dev/Prod Stacks (per environment)
+- **VPC**: Virtual Private Cloud for network isolation
+- **Private Network**: Internal networking for resources
+- Resources tagged with environment name
 
-### Application Architecture
+## Extending the Infrastructure
 
-- **Backend**: Java/Kotlin Spring applications that interact with Scaleway services (databases, object storage, messaging)
-- **Frontend**: Next.js/React applications that communicate with backend APIs
-- **Communication**: RESTful APIs between frontend and backend, event-driven communication via queues/Kafka
+Add resources to `infra/index.ts`:
+
+```typescript
+import * as scaleway from "@pulumiverse/scaleway";
+import * as pulumi from "@pulumi/pulumi";
+
+const stack = pulumi.getStack();
+
+const instance = new scaleway.InstanceServer(`${stack}-web`, {
+    type: "DEV1-S",
+    image: "ubuntu_focal",
+    tags: [stack, "web"],
+});
+
+export const instanceIp = instance.publicIp;
+```
+
+See [Scaleway Pulumi Provider](https://www.pulumi.com/registry/packages/scaleway/) documentation for available resources.
+
+## State Management
+
+This project uses Scaleway Object Storage as a backend for Pulumi state:
+
+- **Versioning enabled**: Recover previous states
+- **Private bucket**: State files are not publicly accessible
+- **S3-compatible**: Standard S3 protocol
+
+State is stored in: `s3://<your-bucket>/<stack-name>/.pulumi/stacks/<project>/<stack>.json`
+
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+### Ways to Contribute
+
+- Add examples for different Scaleway resources
+- Improve documentation
+- Add CI/CD workflows
+- Report issues or suggest features
+
+## Resources
+
+- [Pulumi Documentation](https://www.pulumi.com/docs/)
+- [Scaleway Pulumi Provider](https://www.pulumi.com/registry/packages/scaleway/)
+- [Scaleway Documentation](https://www.scaleway.com/en/docs/)
+- [Pulumi Scaleway Examples](https://github.com/pulumi/examples)
 
 ## License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+- **Issues**: [GitHub Issues](https://github.com/YOUR_USERNAME/scaleway-pulumi-iac-example/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/YOUR_USERNAME/scaleway-pulumi-iac-example/discussions)
+- **Pulumi Community**: [Pulumi Slack](https://slack.pulumi.com/)
