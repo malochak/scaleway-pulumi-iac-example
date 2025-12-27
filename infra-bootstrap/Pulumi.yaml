@@ -1,0 +1,11 @@
+name: scaleway-bootstrap
+runtime: nodejs
+description: Bootstrap infrastructure - shared resources across all environments (container registry, etc.)
+
+config:
+  scaleway:region:
+    description: Default Scaleway region
+    default: fr-par
+  scaleway:zone:
+    description: Default Scaleway zone
+    default: fr-par-1

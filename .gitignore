@@ -2,5 +2,19 @@
 .idea
 *.iml
 
+# Pulumi
+node_modules/
+bin/
+*.log
+
+# Secrets
+.env
+*.pem
+*.key
+
+# Pulumi state (using remote backend)
+.pulumi/
+Pulumi.*.yaml.bak
+
 # AI context
 .context.md
