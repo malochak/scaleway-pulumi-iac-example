@@ -24,7 +24,7 @@ A production-ready example of managing Scaleway infrastructure using Pulumi with
 
 1. **Complete manual setup** (create Object Storage bucket, get API keys):
    ```bash
-   cat SETUP.md
+   cat QUICKSTART.md
    ```
 
 2. **Configure environment**:
@@ -66,8 +66,7 @@ See [QUICKSTART.md](QUICKSTART.md) for detailed instructions.
 scaleway-pulumi-iac-example/
 ├── README.md                   # This file
 ├── LICENSE                     # Apache License 2.0
-├── SETUP.md                    # Manual setup prerequisites
-├── QUICKSTART.md               # Detailed deployment guide
+├── QUICKSTART.md               # Complete setup and deployment guide
 ├── CONTRIBUTING.md             # Contribution guidelines
 ├── .gitignore                  # Git ignore rules
 │
