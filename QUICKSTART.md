@@ -75,6 +75,7 @@ export PULUMI_BACKEND_URL="https://your-bucket-name.s3.fr-par.scw.cloud"
 # These use the same values as your Scaleway credentials
 export AWS_ACCESS_KEY_ID="$SCW_ACCESS_KEY"
 export AWS_SECRET_ACCESS_KEY="$SCW_SECRET_KEY"
+export AWS_REGION="$SCW_DEFAULT_REGION"  # Must match your bucket region
 ```
 
 **Important replacements:**
