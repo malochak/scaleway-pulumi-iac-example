@@ -33,22 +33,29 @@ Pulumi needs a place to store infrastructure state.
 
 ### 1.2 Get API Credentials
 
-1. Go to **Scaleway Console → Project Settings → API Keys**
-2. Click **Generate API Key**:
-   - **Description**: "Pulumi IaC"
-   - **Permissions**: Full access or specific project access
-3. Save these values securely:
-   - Access Key
-   - Secret Key
-   - Project ID (from Project Settings)
-   - Organization ID (from Organization Settings)
+1. Click your **profile icon (top-right corner)** → **IAM & API keys**
+2. Click the **API keys** tab
+3. Note your **Organization ID** displayed at the top of the page (you'll need this later)
+4. Click **+ Generate an API key**:
+   - **API key bearer**: Select "Myself (IAM user)"
+   - **Description**: "Pulumi IaC" (optional but recommended)
+   - **Expiration**: Choose based on your security requirements (default: 1 year)
+   - **Object Storage**: Select **"Yes, set up preferred Project"** (required for Pulumi state backend)
+   - Click **Generate API key** button
+5. On the "Credentials Usage" page, save these values securely:
+   - **Access Key** (SCW_ACCESS_KEY)
+   - **Secret Key** (SCW_SECRET_KEY)
+   - **Project ID** (visible in your Project Dashboard or during key setup)
+   - **Organization ID** (from step 3 above)
+
+⚠️ **Important**: The Secret Key is only shown once. Save it immediately!
 
 ## Step 2: Configure Environment
 
 Create a `.env` file in the project root:
 
 ```bash
-# Scaleway API Credentials
+# Scaleway API Credentials (for Pulumi Scaleway provider)
 export SCW_ACCESS_KEY="your-access-key"
 export SCW_SECRET_KEY="your-secret-key"
 export SCW_DEFAULT_PROJECT_ID="your-project-id"
@@ -56,13 +63,28 @@ export SCW_DEFAULT_ORGANIZATION_ID="your-org-id"
 export SCW_DEFAULT_REGION="fr-par"
 export SCW_DEFAULT_ZONE="fr-par-1"
 
-# Pulumi Backend (replace with your bucket name and region)
-export PULUMI_BACKEND_URL="s3://pulumi-state-<your-bucket>?endpoint=s3.fr-par.scw.cloud&region=fr-par"
+# Pulumi Backend - Choose ONE format below:
+
+# Option 1: HTTPS format (simpler, recommended)
+export PULUMI_BACKEND_URL="https://your-bucket-name.s3.fr-par.scw.cloud"
+
+# Option 2: S3 protocol format (more explicit)
+# export PULUMI_BACKEND_URL="s3://your-bucket-name?endpoint=s3.fr-par.scw.cloud&region=fr-par"
+
+# AWS credentials (required for S3-compatible Object Storage access)
+# These use the same values as your Scaleway credentials
 export AWS_ACCESS_KEY_ID="$SCW_ACCESS_KEY"
 export AWS_SECRET_ACCESS_KEY="$SCW_SECRET_KEY"
 ```
 
-**Important**: Replace `<your-bucket>` with your actual bucket name from Step 1.1.
+**Important replacements:**
+- `your-access-key`, `your-secret-key`: From Step 1.2
+- `your-project-id`, `your-org-id`: From Step 1.2
+- `your-bucket-name`: Your actual bucket name from Step 1.1 (e.g., `pulumi-state-myapp`)
+- `fr-par`: Your bucket's region (e.g., `fr-par`, `nl-ams`, `pl-waw`)
+
+**Why AWS credentials?**
+Scaleway Object Storage is S3-compatible. Pulumi uses the AWS SDK to access the state backend, which requires `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`. These should be set to your Scaleway credentials.
 
 Load the environment:
 ```bash
