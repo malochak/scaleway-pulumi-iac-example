@@ -127,6 +127,31 @@ This project uses Scaleway Object Storage as a backend for Pulumi state:
 
 State is stored in: `s3://<your-bucket>/<stack-name>/.pulumi/stacks/<project>/<stack>.json`
 
+### Stack Configuration Files
+
+**⚠️ Important for Template Users:**
+
+This repository ignores `Pulumi.*.yaml` files (they're not committed). These files contain:
+- Encryption salts for secrets
+- Stack-specific configuration values
+
+**If you use this as a template for your own project:**
+
+1. After running `pulumi stack init`, commit the generated `Pulumi.*.yaml` files:
+   ```bash
+   git add infra-bootstrap/Pulumi.shared.yaml
+   git add infra/Pulumi.dev.yaml infra/Pulumi.prod.yaml
+   git commit -m "Add stack configuration files"
+   ```
+
+2. Update `.gitignore` to allow them:
+   ```bash
+   # Remove or comment out this line in .gitignore:
+   # Pulumi.*.yaml
+   ```
+
+This ensures your team can decrypt secrets and work with the same stacks. The encryption salt itself is safe to commit (the passphrase/key is what must remain secret).
+
 ## Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.

@@ -16,5 +16,10 @@ bin/
 .pulumi/
 Pulumi.*.yaml.bak
 
+# Pulumi stack configuration files
+# These contain encryption salts and stack-specific config
+# If you clone this as a template for your own project, you should commit these files
+Pulumi.*.yaml
+
 # AI context
 .context.md

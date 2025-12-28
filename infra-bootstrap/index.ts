@@ -1,15 +1,17 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as scaleway from "@pulumiverse/scaleway";
 
-const config = new pulumi.Config();
 const projectName = pulumi.getProject();
 
-const containerRegistry = new scaleway.RegistryNamespace("shared-registry", {
+// Shared container registry for all environments (dev, staging, prod)
+const containerRegistry = new scaleway.registry.Namespace("shared-registry", {
     name: `${projectName}-registry`,
     description: "Shared container registry for all environments",
     isPublic: false,
 });
 
+// Stack outputs - accessible via `pulumi stack output <name>`
+// These can be referenced by other Pulumi stacks or CI/CD pipelines
 export const registryNamespaceId = containerRegistry.id;
 export const registryEndpoint = containerRegistry.endpoint;
 export const registryNamespaceName = containerRegistry.name;
