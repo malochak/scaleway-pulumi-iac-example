@@ -6,6 +6,10 @@
 node_modules/
 bin/
 *.log
+dist/
+
+# pnpm
+.pnpm-debug.log
 
 # Secrets
 .env
