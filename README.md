@@ -10,6 +10,8 @@ A production-ready example of managing Scaleway infrastructure using Pulumi with
 - **Container registry** shared across all environments
 - **VPC and networking** per environment with proper isolation
 - **TypeScript** for type-safe infrastructure code
+- **pnpm workspaces** for efficient dependency management
+- **Monorepo structure** with shared components and packages
 - **Production-ready** with proper .gitignore, versioning, and documentation
 
 ## Quick Start
@@ -17,6 +19,7 @@ A production-ready example of managing Scaleway infrastructure using Pulumi with
 ### Prerequisites
 
 - Node.js 24+
+- pnpm 9+ ([install](https://pnpm.io/installation))
 - Pulumi CLI ([install](https://www.pulumi.com/docs/install/))
 - Scaleway account with API credentials
 
@@ -34,24 +37,28 @@ A production-ready example of managing Scaleway infrastructure using Pulumi with
    source .env
    ```
 
-3. **Deploy bootstrap infrastructure** (container registry):
+3. **Install dependencies**:
    ```bash
-   cd infra-bootstrap
-   npm install
+   cd infra
+   pnpm install
+   ```
+
+4. **Deploy bootstrap infrastructure** (container registry):
+   ```bash
+   cd stacks/bootstrap
    pulumi login
    pulumi stack init shared
    pulumi up
    ```
 
-4. **Deploy dev environment**:
+5. **Deploy dev environment** (when created):
    ```bash
-   cd ../infra
-   npm install
+   cd ../app
    pulumi stack init dev
    pulumi up
    ```
 
-5. **Deploy prod environment**:
+6. **Deploy prod environment**:
    ```bash
    pulumi stack init prod
    pulumi stack select prod
@@ -70,19 +77,29 @@ scaleway-pulumi-iac-example/
 ├── CONTRIBUTING.md             # Contribution guidelines
 ├── .gitignore                  # Git ignore rules
 │
-├── infra-bootstrap/            # Shared resources (deploy once)
-│   ├── Pulumi.yaml
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── index.ts                # Container registry namespace
-│
-└── infra/                      # Per-environment resources
-    ├── Pulumi.yaml
-    ├── package.json
-    ├── tsconfig.json
-    ├── index.ts                # VPC, networking, compute
-    ├── Pulumi.dev.yaml         # Dev environment config
-    └── Pulumi.prod.yaml        # Prod environment config
+└── infra/                      # Infrastructure monorepo
+    ├── pnpm-workspace.yaml     # pnpm workspace configuration
+    ├── package.json            # Root package for workspace
+    ├── pnpm-lock.yaml          # Locked dependencies
+    │
+    ├── components/             # Reusable Pulumi components
+    │   └── (shared components)
+    │
+    ├── stacks/                 # Pulumi stack projects
+    │   └── bootstrap/          # Bootstrap infrastructure (shared)
+    │       ├── Pulumi.yaml
+    │       ├── package.json
+    │       ├── tsconfig.json
+    │       └── index.ts        # Container registry
+    │
+    └── packages/               # Shared packages
+        └── config/             # Shared types and constants
+            ├── package.json    # @infra/config
+            ├── tsconfig.json
+            └── src/
+                ├── types.ts
+                ├── constants.ts
+                └── index.ts
 ```
 
 ## What's Deployed
@@ -98,7 +115,7 @@ scaleway-pulumi-iac-example/
 
 ## Extending the Infrastructure
 
-Add resources to `infra/index.ts`:
+Add resources to your stack (e.g., `infra/stacks/app/index.ts` when created):
 
 ```typescript
 import * as scaleway from "@pulumiverse/scaleway";
@@ -139,8 +156,8 @@ This repository ignores `Pulumi.*.yaml` files (they're not committed). These fil
 
 1. After running `pulumi stack init`, commit the generated `Pulumi.*.yaml` files:
    ```bash
-   git add infra-bootstrap/Pulumi.shared.yaml
-   git add infra/Pulumi.dev.yaml infra/Pulumi.prod.yaml
+   git add infra/stacks/bootstrap/Pulumi.shared.yaml
+   git add infra/stacks/app/Pulumi.dev.yaml infra/stacks/app/Pulumi.prod.yaml
    git commit -m "Add stack configuration files"
    ```
 

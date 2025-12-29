@@ -4,14 +4,12 @@ Get your Scaleway infrastructure running with Pulumi in minutes.
 
 ## Prerequisites
 
-### Required Tools
-- Node.js 24+
-- Pulumi CLI ([install guide](https://www.pulumi.com/docs/install/))
-- Scaleway account
+See [README Prerequisites](README.md#prerequisites).
 
 ### Installation Check
 ```bash
 node --version    # Should be 24.x or higher
+pnpm --version    # Should be 9.x or higher
 pulumi version    # Should show Pulumi CLI version
 ```
 
@@ -98,13 +96,21 @@ pulumi login
 # Should output: Logged in to s3://pulumi-state-...
 ```
 
-## Step 3: Deploy Bootstrap Infrastructure
+## Step 3: Install Dependencies
+
+Install all infrastructure workspace dependencies:
+
+```bash
+cd infra
+pnpm install
+```
+
+## Step 4: Deploy Bootstrap Infrastructure
 
 Bootstrap infrastructure contains shared resources used across all environments (dev, prod).
 
 ```bash
-cd infra-bootstrap
-npm install
+cd stacks/bootstrap
 pulumi stack init shared
 pulumi up
 ```
@@ -117,18 +123,17 @@ pulumi stack output registryEndpoint
 pulumi stack output registryNamespaceId
 ```
 
-## Step 4: Deploy Dev Environment
+## Step 5: Deploy Dev Environment (Optional - when app stack is created)
 
 ```bash
-cd ../infra
-npm install
+cd ../app
 pulumi stack init dev
 pulumi up
 ```
 
 Review and confirm with `yes`.
 
-## Step 5: Deploy Prod Environment (Optional)
+## Step 6: Deploy Prod Environment (Optional)
 
 ```bash
 pulumi stack init prod
@@ -138,44 +143,21 @@ pulumi up
 
 ## Project Structure
 
-```
-scaleway-pulumi-iac-example/
-├── .env                     # Your credentials (gitignored)
-├── QUICKSTART.md            # This file
-├── README.md                # Project overview
-├── CONTRIBUTING.md          # Contribution guidelines
-│
-├── infra-bootstrap/         # Shared resources (deploy once)
-│   ├── Pulumi.yaml
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── index.ts             # Container registry
-│
-└── infra/                   # Per-environment resources
-    ├── Pulumi.yaml
-    ├── package.json
-    ├── tsconfig.json
-    ├── index.ts             # VPC, networking
-    ├── Pulumi.dev.yaml      # Dev config
-    └── Pulumi.prod.yaml     # Prod config
-```
+The project uses a **monorepo structure** under `infra/`:
 
-**Why two projects?**
-- **infra-bootstrap**: Shared resources (registry, DNS zones) used by all environments
-- **infra**: Per-environment resources (compute, databases) that differ between dev/prod
+- **`infra/stacks/bootstrap/`** - Bootstrap infrastructure (container registry)
+- **`infra/components/`** - Reusable Pulumi components (for future use)
+- **`infra/packages/config/`** - Shared types and constants
 
-This separation prevents accidentally deleting shared resources when destroying dev environment.
+All infrastructure packages share dependencies through pnpm workspace.
+
+See [README.md](README.md#project-structure) for the complete structure diagram.
 
 ## What Gets Deployed
 
-### Bootstrap Stack (shared)
-- Container Registry namespace for all environments
-- Images tagged by environment: `myapp:dev`, `myapp:prod`
+**Bootstrap Stack (shared):** Container Registry for all environments
 
-### Dev/Prod Stacks (per environment)
-- VPC for network isolation
-- Private Network for internal communication
-- Tagged with environment name
+**App Stacks (when created):** VPC, networking, and application resources per environment
 
 ## Common Commands
 
@@ -211,7 +193,7 @@ After bootstrap deployment:
 ### Push Images
 ```bash
 # Get registry endpoint
-REGISTRY_ENDPOINT=$(cd infra-bootstrap && pulumi stack output registryEndpoint)
+REGISTRY_ENDPOINT=$(cd infra/stacks/bootstrap && pulumi stack output registryEndpoint)
 
 # Login
 docker login $REGISTRY_ENDPOINT -u nologin -p $SCW_SECRET_KEY
@@ -271,16 +253,18 @@ pulumi stack import < backup.json
 
 ## Next Steps
 
-1. **Add more resources** to `infra/index.ts`:
+1. **Create app stack** and add resources to `infra/stacks/app/index.ts`:
    - Instances, Kubernetes clusters
    - Databases (PostgreSQL, MySQL, Redis)
    - Load balancers, object storage
 
-2. **Configure stack-specific settings** in `Pulumi.{stack}.yaml`
+2. **Create reusable components** in `infra/components/`
 
-3. **Set up CI/CD** for automated deployments
+3. **Configure stack-specific settings** in `Pulumi.{stack}.yaml` files
 
-4. **Explore** the [Scaleway Pulumi Provider docs](https://www.pulumi.com/registry/packages/scaleway/)
+4. **Set up CI/CD** for automated deployments
+
+5. **Explore** the [Scaleway Pulumi Provider docs](https://www.pulumi.com/registry/packages/scaleway/)
 
 ## Getting Help
 
