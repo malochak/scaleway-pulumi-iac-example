@@ -193,6 +193,5 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/YOUR_USERNAME/scaleway-pulumi-iac-example/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/YOUR_USERNAME/scaleway-pulumi-iac-example/discussions)
+- **Issues**: [GitHub Issues](https://github.com/malochak/scaleway-pulumi-iac-example/issues)
 - **Pulumi Community**: [Pulumi Slack](https://slack.pulumi.com/)
