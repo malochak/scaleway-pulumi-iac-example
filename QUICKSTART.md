@@ -265,9 +265,3 @@ pulumi stack import < backup.json
 4. **Set up CI/CD** for automated deployments
 
 5. **Explore** the [Scaleway Pulumi Provider docs](https://www.pulumi.com/registry/packages/scaleway/)
-
-## Getting Help
-
-- GitHub Issues: [Report bugs or request features](https://github.com/YOUR_USERNAME/scaleway-pulumi-iac-example/issues)
-- Pulumi Community: [Pulumi Slack](https://slack.pulumi.com/)
-- Scaleway Docs: [Scaleway Documentation](https://www.scaleway.com/en/docs/)
