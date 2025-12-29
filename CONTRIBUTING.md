@@ -31,9 +31,7 @@ Thank you for your interest in contributing! This project is an example infrastr
 
 ### Prerequisites
 
-- Node.js 24+
-- Pulumi CLI
-- Scaleway account (for testing)
+See [README Prerequisites](README.md#prerequisites). You'll also need a Scaleway account for testing infrastructure changes.
 
 ### Local Development
 
@@ -41,11 +39,8 @@ Thank you for your interest in contributing! This project is an example infrastr
 git clone https://github.com/YOUR_USERNAME/scaleway-pulumi-iac-example.git
 cd scaleway-pulumi-iac-example
 
-cd infra-bootstrap
-npm install
-
-cd ../infra
-npm install
+cd infra
+pnpm install
 ```
 
 ### Testing Changes
@@ -95,11 +90,18 @@ Format:
 Maintain the existing structure:
 
 ```
-infra-bootstrap/    # Shared resources (registry, etc.)
-infra/              # Per-environment resources
+infra/
+├── components/     # Reusable Pulumi components
+├── stacks/         # Pulumi stack projects
+│   └── bootstrap/  # Bootstrap infrastructure (shared)
+└── packages/       # Shared packages
+    └── config/     # Shared types and constants
 ```
 
-New resources should go in the appropriate directory.
+New resources should go in the appropriate directory:
+- Reusable components → `infra/components/`
+- New stacks → `infra/stacks/`
+- Shared types/constants → `infra/packages/config/`
 
 ## Adding New Resources
 
