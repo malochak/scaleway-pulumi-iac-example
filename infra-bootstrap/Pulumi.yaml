@@ -1,3 +1,0 @@
-name: scaleway-bootstrap
-runtime: nodejs
-description: Bootstrap infrastructure - shared resources across all environments (container registry, etc.)
